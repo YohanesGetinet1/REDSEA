@@ -1,21 +1,37 @@
 import React from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
-import { Settings, Calendar, Menu as MenuIcon } from 'lucide-react';
+import { Settings, Calendar, Menu as MenuIcon, Star, Clock, Share2, Users } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth'; // Import useAuth hook
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // In a real app, this would check for actual authentication
-  const isAuthenticated = true;
-
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
-  }
-
+  const { user, loading: authLoading } = useAuth();
   const location = useLocation();
-  
+
   const navItems = [
     { path: '/admin/menu', label: 'Menu Items', icon: MenuIcon },
     { path: '/admin/events', label: 'Events', icon: Calendar },
+    // Add other admin sections here as needed
+    { path: '/admin/specials', label: 'Daily Specials', icon: Star },
+    { path: '/admin/hours', label: 'Business Hours', icon: Clock },
+    { path: '/admin/social', label: 'Social Posts', icon: Share2 },
+    { path: '/admin/team', label: 'Team Members', icon: Users },
+    // { path: '/admin/team', label: 'Team Members', icon: Users },
   ];
+
+  if (authLoading) {
+    // You can return a loading spinner or a blank page while auth state is resolving
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    // Redirect to login page if not authenticated
+    // Pass the current location to redirect back after login (optional)
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -49,7 +65,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         <Link
                           to={item.path}
                           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-                            location.pathname === item.path
+                            location.pathname.startsWith(item.path) // Use startsWith for active parent routes
                               ? 'bg-red-50 text-red-600'
                               : 'text-gray-600 hover:bg-gray-50'
                           }`}

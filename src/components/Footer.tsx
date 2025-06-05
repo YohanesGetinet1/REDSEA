@@ -1,14 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { GlassWater, Instagram, Facebook, Twitter, MapPin, Phone, Mail } from 'lucide-react';
-import { businessHours } from '../data/businessHours';
+// Removed: import { businessHours as staticBusinessHours } from '../data/businessHours';
+import { BusinessHours as BusinessHoursType } from '../types'; // Use the type
+import { fetchBusinessHours } from '../services/firestoreService'; // Import the fetching function
+import toast from 'react-hot-toast';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [businessHours, setBusinessHours] = useState<BusinessHoursType[]>([]);
+  const [loadingHours, setLoadingHours] = useState(true);
+
+  useEffect(() => {
+    const getHours = async () => {
+      try {
+        setLoadingHours(true);
+        const hours = await fetchBusinessHours();
+        setBusinessHours(hours);
+      } catch (error) {
+        toast.error("Could not load business hours.");
+        console.error(error);
+      } finally {
+        setLoadingHours(false);
+      }
+    };
+    getHours();
+  }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Thanks for subscribing with ${email}! You'll receive our updates soon.`);
+    // TODO: Consider saving subscriber emails to Firebase (e.g., a 'subscribers' collection)
+    toast.success(`Thanks for subscribing with ${email}! You'll receive our updates soon.`);
     setEmail('');
   };
 
@@ -26,15 +48,10 @@ const Footer: React.FC = () => {
               A vibrant local lounge known for daily drink specials, weekly events, full kitchen, and live sports streaming.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-red-500 transition-colors">
-                <Twitter size={20} />
-              </a>
+              {/* TODO: Make social links dynamic from Firestore? */}
+              <a href="#" className="text-gray-400 hover:text-red-500 transition-colors"><Instagram size={20} /></a>
+              <a href="#" className="text-gray-400 hover:text-red-500 transition-colors"><Facebook size={20} /></a>
+              <a href="#" className="text-gray-400 hover:text-red-500 transition-colors"><Twitter size={20} /></a>
             </div>
           </div>
 
@@ -42,27 +59,18 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 border-b border-red-500 pb-2 inline-block">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-400 hover:text-red-500 transition-colors">Home</Link>
-              </li>
-              <li>
-                <Link to="/menu" className="text-gray-400 hover:text-red-500 transition-colors">Menu</Link>
-              </li>
-              <li>
-                <Link to="/events" className="text-gray-400 hover:text-red-500 transition-colors">Events</Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-gray-400 hover:text-red-500 transition-colors">About Us</Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-gray-400 hover:text-red-500 transition-colors">Contact</Link>
-              </li>
+              <li><Link to="/" className="text-gray-400 hover:text-red-500 transition-colors">Home</Link></li>
+              <li><Link to="/menu" className="text-gray-400 hover:text-red-500 transition-colors">Menu</Link></li>
+              <li><Link to="/events" className="text-gray-400 hover:text-red-500 transition-colors">Events</Link></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-red-500 transition-colors">About Us</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-red-500 transition-colors">Contact</Link></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
             <h3 className="text-lg font-semibold mb-4 border-b border-red-500 pb-2 inline-block">Contact Us</h3>
+            {/* TODO: Make contact info dynamic from Firestore? */}
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-red-500 flex-shrink-0 mt-1" />
@@ -94,10 +102,7 @@ const Footer: React.FC = () => {
                 required
                 className="bg-gray-800 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
               />
-              <button
-                type="submit"
-                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
-              >
+              <button type="submit" className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors duration-300">
                 Subscribe
               </button>
             </form>
@@ -107,14 +112,20 @@ const Footer: React.FC = () => {
         {/* Hours */}
         <div className="mt-8 pt-6 border-t border-gray-800">
           <h3 className="text-lg font-semibold mb-4 text-center">Business Hours</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-            {businessHours.map((item) => (
-              <div key={item.day} className="text-center">
-                <p className="font-medium">{item.day}</p>
-                <p className="text-gray-400 text-sm">{item.hours}</p>
-              </div>
-            ))}
-          </div>
+          {loadingHours ? (
+            <p className="text-center text-gray-400">Loading hours...</p>
+          ) : businessHours.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+              {businessHours.map((item) => (
+                <div key={item.docId || item.day} className="text-center"> {/* Use docId if available, fallback to day */}
+                  <p className="font-medium">{item.day}</p>
+                  <p className="text-gray-400 text-sm">{item.hours}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-400">Business hours not available.</p>
+          )}
         </div>
 
         {/* Copyright */}

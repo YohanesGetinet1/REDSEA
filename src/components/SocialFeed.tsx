@@ -10,7 +10,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ posts }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {posts.map((post) => (
-        <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+        <div key={post.docId || post.date} className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
           <div className="h-60 overflow-hidden">
             <img
               src={post.image}

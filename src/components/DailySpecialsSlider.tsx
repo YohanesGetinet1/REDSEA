@@ -36,7 +36,7 @@ const DailySpecialsSlider: React.FC<DailySpecialsSliderProps> = ({ specials }) =
       <div className="flex mb-4 overflow-x-auto scrollbar-hide">
         {specials.map((special, index) => (
           <button
-            key={special.id}
+            key={special.docId || special.day}
             onClick={() => goToSpecial(index)}
             className={`px-4 py-2 rounded-full mx-1 whitespace-nowrap transition-colors duration-300 ${
               activeIndex === index
@@ -52,7 +52,7 @@ const DailySpecialsSlider: React.FC<DailySpecialsSliderProps> = ({ specials }) =
       <div className="relative h-full w-full">
         {specials.map((special, index) => (
           <div
-            key={special.id}
+            key={special.docId || special.day}
             className={`transform transition-all duration-500 ${
               activeIndex === index 
                 ? 'opacity-100 translate-x-0' 

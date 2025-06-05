@@ -1,11 +1,18 @@
+// src/components/Header.tsx
 import React, { useState, useEffect } from 'react';
-import { Menu, X, GlassWater } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, GlassWater, UserCircle, LogOut } from 'lucide-react'; // Added LogOut
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Added useNavigate
+import { useAuth } from '../hooks/useAuth'; // Import useAuth hook
+import { auth } from '../firebase/config'; // Import auth for signOut
+import { signOut } from 'firebase/auth';
+import toast from 'react-hot-toast';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth(); // Use our auth hook
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,15 +22,24 @@ const Header: React.FC = () => {
         setIsScrolled(false);
       }
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu when changing routes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast.success('Logged out successfully!');
+      navigate('/'); // Redirect to home page after logout
+    } catch (error) {
+      console.error("Error logging out: ", error);
+      toast.error('Failed to log out.');
+    }
+  };
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -32,6 +48,12 @@ const Header: React.FC = () => {
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
+
+  // Avoid rendering mismatch during initial auth check
+  if (authLoading) {
+    // You could return a minimal header or null, or a loading spinner
+    // For simplicity, let's render the structure but links might briefly change
+  }
 
   return (
     <header
@@ -66,6 +88,34 @@ const Header: React.FC = () => {
                 {item.name}
               </Link>
             ))}
+
+            {user ? (
+              <>
+                <Link
+                  to="/admin/menu" // Or a general admin dashboard path
+                  className="flex items-center text-white hover:text-red-400 transition-colors duration-300"
+                >
+                  <UserCircle size={18} className="mr-1" />
+                  Admin
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center text-white hover:text-red-400 transition-colors duration-300"
+                >
+                  <LogOut size={18} className="mr-1" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              !authLoading && ( // Only show login if not loading and no user
+                <Link
+                  to="/admin/login"
+                  className="text-white hover:text-red-400 transition-colors duration-300"
+                >
+                  Admin Login
+                </Link>
+              )
+            )}
             <Link
               to="/contact"
               className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
@@ -102,6 +152,36 @@ const Header: React.FC = () => {
                   </Link>
                 </li>
               ))}
+              <li className="pt-1">
+                {user ? (
+                  <>
+                    <Link
+                      to="/admin/menu"
+                      className="flex items-center text-white hover:text-red-400 py-2 transition-colors"
+                    >
+                      <UserCircle size={18} className="mr-2" />
+                      Admin Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full text-left text-white hover:text-red-400 py-2 transition-colors"
+                    >
+                      <LogOut size={18} className="mr-2" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                 !authLoading && ( // Only show login if not loading and no user
+                    <Link
+                      to="/admin/login"
+                      className="flex items-center text-white hover:text-red-400 py-2 transition-colors"
+                    >
+                      <UserCircle size={18} className="mr-2" />
+                      Admin Login
+                    </Link>
+                  )
+                )}
+              </li>
               <li className="pt-2">
                 <Link
                   to="/contact"

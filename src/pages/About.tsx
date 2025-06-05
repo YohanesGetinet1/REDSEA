@@ -1,10 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Added useState, useEffect
 import PageHero from '../components/PageHero';
 import SectionTitle from '../components/SectionTitle';
 import TeamMemberCard from '../components/TeamMemberCard';
-import { teamMembers } from '../data/team';
+// Removed: import { teamMembers as staticTeamMembers } from '../data/team';
+import { TeamMember } from '../types'; // Import type
+import { fetchTeamMembers } from '../services/firestoreService'; // Import fetching function
+import toast from 'react-hot-toast';
 
 const About: React.FC = () => {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loadingTeam, setLoadingTeam] = useState(true);
+
+  useEffect(() => {
+    const getTeamMembers = async () => {
+      try {
+        setLoadingTeam(true);
+        const members = await fetchTeamMembers();
+        setTeamMembers(members);
+      } catch (error) {
+        toast.error("Could not load team members.");
+        console.error(error);
+      } finally {
+        setLoadingTeam(false);
+      }
+    };
+    getTeamMembers();
+  }, []);
+
   return (
     <div>
       <PageHero
@@ -124,12 +146,17 @@ const About: React.FC = () => {
             subtitle="The talented individuals behind Red Sea Lounge"
             center={true}
           />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map(member => (
-              <TeamMemberCard key={member.id} member={member} />
-            ))}
-          </div>
+          {loadingTeam ? (
+            <p className="text-center text-gray-600">Loading team members...</p>
+          ) : teamMembers.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {teamMembers.map(member => (
+                <TeamMemberCard key={member.docId} member={member} /> // Key uses docId
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-600">Our team information is currently unavailable.</p>
+          )}
         </div>
       </section>
       
