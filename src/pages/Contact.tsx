@@ -55,7 +55,7 @@ const Contact: React.FC = () => {
                     <MapPin className="mr-3 text-red-600 flex-shrink-0 mt-1" />
                     <div>
                       <span className="block font-medium">Address</span>
-                      <span className="text-gray-700">123 Nightlife Avenue, Downtown, City, ST 12345</span>
+                      <span className="text-gray-700">4263 E Main St, Columbus, OH 43213</span>
                     </div>
                   </li>
                   <li className="flex items-start">
@@ -63,7 +63,7 @@ const Contact: React.FC = () => {
                     <div>
                       <span className="block font-medium">Phone</span>
                       <a href="tel:+11234567890" className="text-gray-700 hover:text-red-600 transition-colors">
-                        (123) 456-7890
+                        +1 (740) 564-4979
                       </a>
                     </div>
                   </li>
@@ -72,7 +72,7 @@ const Contact: React.FC = () => {
                     <div>
                       <span className="block font-medium">Email</span>
                       <a href="mailto:info@redsealounge.com" className="text-gray-700 hover:text-red-600 transition-colors">
-                        info@redsealounge.com
+                        redsealounge12@gmail.com
                       </a>
                     </div>
                   </li>

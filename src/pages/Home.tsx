@@ -154,7 +154,7 @@ useEffect(() => {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center">
                 <MapPin className="mr-2 text-red-500" />
-                <span>123 Nightlife Avenue, Downtown, City</span>
+                <span>4263 E Main St, Columbus, OH 43213</span>
               </div>
               <div className="flex items-center">
                 <Calendar className="mr-2 text-red-500" />
